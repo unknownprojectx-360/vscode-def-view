@@ -102,6 +102,17 @@ export class Renderer {
 			if (trimmedLine.length > 0) {
 				// Keep searching until the next non-blank line that is 
 				// at a shorter indent level.
+
+				// Ignore preprocessor directives which are typically at column 0.
+				// This fixes issues with #if / #endif in C-like languages.
+				const cStyleLangs = ['c', 'cpp', 'csharp', 'objective-c', 'objective-cpp', 'swift', 'vb'];
+				if (firstChar === '#' && cStyleLangs.includes(doc.languageId)) {
+					if (n > lastLine) {
+						lastLine = n;
+					}
+					continue;
+				}
+
 				if (lineIndent < indent) {
 					break;
 				} else if (insideBlock && lineIndent === indent) {
@@ -152,7 +163,18 @@ export class Renderer {
 				}
 			}
 		}
-		lines = lines.slice(firstLine, lastLine + 1).map((x) => { return x.substring(indent) });
+		lines = lines.slice(firstLine, lastLine + 1).map((x) => {
+			if (x.trim().length === 0) {
+				return '';
+			}
+
+			let lineIndent = x.search(/\S/);
+			if (lineIndent !== -1 && lineIndent < indent) {
+				return x.substring(lineIndent);
+			}
+
+			return x.substring(indent);
+		});
 		return lines.join("\n") + "\n";
 	}
 }
