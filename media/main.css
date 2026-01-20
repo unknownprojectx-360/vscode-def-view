@@ -38,6 +38,7 @@ code {
 	color: inherit;
 	background: var(--vscode-textCodeBlock-background);
 	font-family: var(--vscode-editor-font-family);
+	tab-size: 4;
 }
 
 ul,
